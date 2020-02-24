@@ -2,7 +2,7 @@
 title: "Tarea 2"
 author: "Santiago, Sofía, Román, Luis"
 date: "24/2/2020"
-output: pdf_document
+output: html_document
 ---
 
 ```{r setup, include=FALSE}
@@ -167,8 +167,8 @@ menos igual a 0.85, usando la prueba de la mediana.
 ```{r}
 na<-c(1,2,5)
 no<-c(4,8,9,10,12)
-n<-length(nar)
-m<-length(nor)
+n<-length(na)
+m<-length(no)
 N<-n+m
 names(na) <- rep("x",n)
 names(no) <- rep("Y",m)
