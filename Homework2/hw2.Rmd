@@ -1,7 +1,7 @@
 ---
 title: "Tarea 2"
-author: "Santiago, Sofía, Román, Individuo4"
-date: "8/2/2020"
+author: "Santiago, Sofía, Román, Luis"
+date: "24/2/2020"
 output: pdf_document
 ---
 
@@ -11,10 +11,12 @@ knitr::opts_chunk$set(echo = TRUE)
 library(knitr)
 library(tidyverse)
 library(coin)
+library(cowplot)
+library(BSDA)
 ```
 
 
-```{r}
+```{r, include = FALSE}
 set.seed(20200208) #created at date
 
 # assigning number of excercises 
@@ -40,161 +42,28 @@ cat("\nEjercicios Sof: ")
 ```
 
 
-##Ejercicio 6
-A una muestra de tres niñas y cinco niños se les dan instrucciones sobre cómo armar un
-lego. Luego se les pide armar el lego una y otra vez hasta que lo hagan correctamente.
-El número de repeticiones necesarias para una terminación correcta son 1,2, y 5 para
-las niñas, y 4,8,9,10 y 12 para los niños. Encontrar el p−valor de la alternativa que en
-promedio las niñas aprenden la actividad más rápido que los niños, y encontrar el intervalo
-de confianza estimado de la diferencia $\theta = M_Y − M_X$ con un coeficiente de confianza al
-menos igual a 0.85, usando la prueba de la mediana.
+# Ejercicio 2 
 
-```{r}
-na<-c(1,2,5)
-no<-c(4,8,9,10,12)
-n<-length(nar)
-m<-length(nor)
-N<-n+m
-names(na) <- rep("x",n)
-names(no) <- rep("Y",m)
-```
- Primero encontremos el p-value de $H_0:M_Y = M_X$ $H_0:M_Y < M_X$en promedio las niñas aprenden más rápido que los niños.
-
-Tenemos dos muestras aleatorias independientes, entonces podemos usar el Mann-whitney test.
-
-Sacamos los rangos para ambos grupos
-```{r}
-(w <- sort(c(na,no)))
-(Rw <- rank(w,ties.method = "average"))
+```{r , echo=TRUE}
+theta <- seq(0, 1, .001)
+plot(theta, (1 - pbinom(7, size =  10, prob = theta)), type = "l", col = "blue")
+abline(h = 1, col = "black", lty = 2)
+lines(theta, (1 - pnorm(7, mean = 10 * theta, sd = 10 * theta * (1- theta))), type = "l", col = "red")
 ```
 
-Ahora obtenemos la suma de los rangos de cada grupo
+# Ejercicio 4
+
+La hipotesis nula es $H_{0} : \mu_{d} -?= \mu_{a}$ vs $H_{a} : \mu_{d} \neq \mu_{a}$
 
 ```{r}
-Rw[names(Rw) == "x"]
-(Tx <- sum(Rw[names(Rw) == "x"]))
-```
-
-```{r}
-(T1<-Tx-n*(N+1)/2)/sqrt(n*m/(N*(N-1))*sum(Rw^2) - n*m*(N+1)^2/(4*(N-1)))
-(pval <- 1-pnorm(T1))
-```
-
-No rechazamos con un p-value de 1 y un nivel de confianza de 0.05
-
-Ahora agámoslo con funciones
-
-```{r}
-wilcox.test(x=na,y=no,alternative = "greater",
-            paired = FALSE, exact = TRUE, correct = FALSE,
-            conf.int = TRUE, conf.level = 0.85,
-             digits.rank = Inf)
-```
-
-Notemos que el p-value es grande, entonces no rechazamos la hipótesis nula, es decir, la mediana de las niñas es mayor que la de los niños.
-
-El intervalo de confianza para $\theta = M_Y − M_X$ es
-
-
-Ejercicio 8
-Al principio del semestre los estudiantes de nuevo ingreso fueron divididos en dos grupos. A un grupo se le enseñó econometría usando métodos no paramétricos, donde todos los estudiantes progresaron de un estado al siguiente al mismo tiempo, siguiendo las direcciones del profesor. El segundo grupo les enseñaron métodos no paramétricos de manera individual, donde cada estudiante progresaba de acuerdo a su propio ritmo, bajo la supervisión del profesor. Al ﬁnal del año se aplicó un examen, con los siguientes resultados: Primer grupo: 227, 55, 184, 174, 176, 234, 147, 194, 252, 194, 88, 248, 149, 247, 161, 206, 16, 99, 171, 89 Segundo grupo: 209, 271, 63, 19, 14, 151, 184, 127, 165, 235, 53, 151, 171, 147, 228, 101, 292, 99, 271, 179.
-a. Probar la hipótesis nula de que no hay diferencia en los dos métodos contra la alternativa de que las dos medianas son diferentes.
-```{r}
-G1 <- c(227, 55, 184, 174, 176, 234, 147, 194, 252, 194, 88, 248, 149, 247, 161, 206, 16, 99, 171, 89)
-G2 <- c(209, 271, 63, 19, 14, 151, 184, 127, 165, 235, 53, 151, 171, 147, 228, 101, 292, 99, 271, 179)
-
-#Wilcoxon Test
-wilcox.test(G1,G2,paired = F,alternative = "two.sided")
+antes <- c(90, 83, 105, 97, 110, 78)
+despues <- c(97, 80, 110, 93, 123, 84)
+SIGN.test(antes, despues,paired = T, alternative = "less", conf.level = .9)
+wilcox.test(antes, despues, paired = TRUE, exact = TRUE, alternative = "less", conf.level = .9, conf.int = .9)
 
 ```
-Esto quiere decir que no tenemos evidencia para rechazar Ho, con una confianza del 95% decimos que no hay diferencia entre los métodos.
-
-b. Probar la hipótesis nula de igualdad de varianzas contra la alternativa de que la varianza de la segunda población es mayor que la varianza de la primera población
-```{r}
-datos <- data.frame(resultados = c(G1,G2), prueba = factor(c(rep(1,length(G1)),rep(2,length(G2)))))
-conover_test(resultados ∼ prueba, data=datos, alternative= "less")
-```
-Con esta prueba analizamos el radio de las varianzas (grupo 1 entre grupo 2). La prueba nos dice que no hay evidencia para rechar Ho: var(G1) = Var(G2).
-
-```{r}
-wilcox.test(x=na,y=no,alternative = "greater",
-            paired = FALSE, exact = TRUE, correct = FALSE,
-            conf.int = TRUE, conf.level = 0.85,
-             digits.rank = Inf)$conf.int
-```
-
-## Ejercicio 9
-
-Ocho voluntarios fueron reclutados para probar la eficacia de usar un telescopio en un
-rifle. Se cree que el uso del telescopio aumentará los puntajes en un rango de tiro. Para
-probar esto, los ocho voluntarios se les pidió usar un rifle en un rango de tiro, tanto con
-un telescopio en la mira como sin telescopio en la mira de los rifles, usando un patrón
-alternado aleatorio entre ambos. Los resultado fueron:
-
-¿Las miras telescópicas resultan en puntajes más altos?
-
-a) Usar una prueba basada sólo en rangos. Encontrar el p-valor en tres formas diferentes:
-(1) encontrar el p-valor exacto, (2) Usar la aproximación normal sin corrección por
-continuidad y (3) Usar la aproximación normal con la corrección de continuidad.
-
-
-```{r}
-w<-c(96, 93, 89, 88, 85, 83, 80, 77)
-z<-c(92, 92, 89, 96, 82, 79, 80, 78)
-dif<-w-z
-```
-
-(1) p-value exacto
-```{r}
-wilcox.test(w,z,alternative = "two.sided",
-            paired = FALSE, exact = TRUE, correct = FALSE,
-            conf.int = TRUE, conf.level = 0.85,
-             digits.rank = Inf)
-```
-
-(2)Usar la aproximación normal sin corrección por continuidad ¿cómo se le deja la normal sin que se corrija? Me sale igual que con p-value exacto
-
-```{r}
-wilcox.test(w,z,alternative = "two.sided",
-            paired = FALSE, exact = FALSE, correct = FALSE,
-            conf.int = TRUE, conf.level = 0.85,
-             digits.rank = Inf)
-```
-
-(3)Usar la aproximación normal con la corrección de continuidad
-```{r}
-wilcox.test(w,z,alternative = "two.sided",
-            paired = FALSE, exact = FALSE, correct = TRUE,
-            conf.int = TRUE, conf.level = 0.85,
-             digits.rank = Inf)
-```
-
-b)Usar una prueba basada en normalidad. FALTA ESTA
-
-```{r}
-shapiro.test(dif)
-```
-Tiene un p-value mayor a 0.05, entonces no rechazamos $H_0$.
-
-c)Usar una prueba de aleatorización tipo Fisher
-
-```{r}
-#fisher.test(w, z, alternative = "two.sided") la veremos en clase
-```
-
-
-d)Encontrar un intervalo de confianza para la mejora en el puntaje obtenida usando una
-mira telescópica
-```{r}
-library(gmodels)
-mejora<-dif
-ci(mejora, confidence=0.95)
-```
-Tenemos que el intervalo es [-2.876358, 3.626358]
-
-
-
-
+El valor p de la prueba del signo es .3438 y el intervalo de confianza es de (-inf, 3.1)
+El valor p de la prueba del rango con signo es .07813 y el intervalo de confianza es de (-inf, -.5). El supuesto que se debe hacer es que la muestra es pareada.
 
 
 # Ejercicio 5
@@ -284,6 +153,185 @@ for(i in 1:3)
 
 
 ```
+
+
+# Ejercicio 6
+A una muestra de tres niñas y cinco niños se les dan instrucciones sobre cómo armar un
+lego. Luego se les pide armar el lego una y otra vez hasta que lo hagan correctamente.
+El número de repeticiones necesarias para una terminación correcta son 1,2, y 5 para
+las niñas, y 4,8,9,10 y 12 para los niños. Encontrar el p−valor de la alternativa que en
+promedio las niñas aprenden la actividad más rápido que los niños, y encontrar el intervalo
+de confianza estimado de la diferencia $\theta = M_Y − M_X$ con un coeficiente de confianza al
+menos igual a 0.85, usando la prueba de la mediana.
+
+```{r}
+na<-c(1,2,5)
+no<-c(4,8,9,10,12)
+n<-length(nar)
+m<-length(nor)
+N<-n+m
+names(na) <- rep("x",n)
+names(no) <- rep("Y",m)
+```
+ Primero encontremos el p-value de $H_0:M_Y = M_X$ $H_0:M_Y < M_X$en promedio las niñas aprenden más rápido que los niños.
+
+Tenemos dos muestras aleatorias independientes, entonces podemos usar el Mann-whitney test.
+
+Sacamos los rangos para ambos grupos
+```{r}
+(w <- sort(c(na,no)))
+(Rw <- rank(w,ties.method = "average"))
+```
+
+Ahora obtenemos la suma de los rangos de cada grupo
+
+```{r}
+Rw[names(Rw) == "x"]
+(Tx <- sum(Rw[names(Rw) == "x"]))
+```
+
+```{r}
+(T1<-Tx-n*(N+1)/2)/sqrt(n*m/(N*(N-1))*sum(Rw^2) - n*m*(N+1)^2/(4*(N-1)))
+(pval <- 1-pnorm(T1))
+```
+
+No rechazamos con un p-value de 1 y un nivel de confianza de 0.05
+
+Ahora agámoslo con funciones
+
+```{r}
+wilcox.test(x=na,y=no,alternative = "greater",
+            paired = FALSE, exact = TRUE, correct = FALSE,
+            conf.int = TRUE, conf.level = 0.85,
+             digits.rank = Inf)
+```
+
+Notemos que el p-value es grande, entonces no rechazamos la hipótesis nula, es decir, la mediana de las niñas es mayor que la de los niños.
+
+El intervalo de confianza para $\theta = M_Y − M_X$ es
+
+
+Ejercicio 8
+Al principio del semestre los estudiantes de nuevo ingreso fueron divididos en dos grupos. A un grupo se le enseñó econometría usando métodos no paramétricos, donde todos los estudiantes progresaron de un estado al siguiente al mismo tiempo, siguiendo las direcciones del profesor. El segundo grupo les enseñaron métodos no paramétricos de manera individual, donde cada estudiante progresaba de acuerdo a su propio ritmo, bajo la supervisión del profesor. Al ﬁnal del año se aplicó un examen, con los siguientes resultados: Primer grupo: 227, 55, 184, 174, 176, 234, 147, 194, 252, 194, 88, 248, 149, 247, 161, 206, 16, 99, 171, 89 Segundo grupo: 209, 271, 63, 19, 14, 151, 184, 127, 165, 235, 53, 151, 171, 147, 228, 101, 292, 99, 271, 179.
+a. Probar la hipótesis nula de que no hay diferencia en los dos métodos contra la alternativa de que las dos medianas son diferentes.
+```{r}
+G1 <- c(227, 55, 184, 174, 176, 234, 147, 194, 252, 194, 88, 248, 149, 247, 161, 206, 16, 99, 171, 89)
+G2 <- c(209, 271, 63, 19, 14, 151, 184, 127, 165, 235, 53, 151, 171, 147, 228, 101, 292, 99, 271, 179)
+
+#Wilcoxon Test
+wilcox.test(G1,G2,paired = F,alternative = "two.sided")
+
+```
+Esto quiere decir que no tenemos evidencia para rechazar Ho, con una confianza del 95% decimos que no hay diferencia entre los métodos.
+
+b. Probar la hipótesis nula de igualdad de varianzas contra la alternativa de que la varianza de la segunda población es mayor que la varianza de la primera población
+```{r}
+datos <- data.frame(resultados = c(G1,G2), prueba = factor(c(rep(1,length(G1)),rep(2,length(G2)))))
+conover_test(resultados ∼ prueba, data=datos, alternative= "less")
+```
+Con esta prueba analizamos el radio de las varianzas (grupo 1 entre grupo 2). La prueba nos dice que no hay evidencia para rechar Ho: var(G1) = Var(G2).
+
+```{r}
+wilcox.test(x=na,y=no,alternative = "greater",
+            paired = FALSE, exact = TRUE, correct = FALSE,
+            conf.int = TRUE, conf.level = 0.85,
+             digits.rank = Inf)$conf.int
+```
+
+# Ejercicio 7
+
+```{r}
+pinturaa <- c(2, 3, 4, 6, 8, 9, 10, 12, 13, 14)
+pinturab <- c(1, 5, 7, 11, 15, 16, 17, 18, 19, 20)
+pintura <- c()
+for (i in 1:10){
+  if (pinturaa[i] > pinturab[i]){
+    pintura[i] = "A"
+  }
+  else{
+    pintura[i] = "B"
+  }
+      
+}
+rango <- 1:9
+sample(c(0,1), 10, replace = T)
+wilcox.test(x = c(1), y = c(2,3,4,5,6,7,8,9,10), paired = F, alternative = 'less', conf.level = .95 )
+```
+Como podemos notar, si existe diferencia significativa entre la pintura a y la pintura b
+
+# Ejercicio 9
+
+Ocho voluntarios fueron reclutados para probar la eficacia de usar un telescopio en un
+rifle. Se cree que el uso del telescopio aumentará los puntajes en un rango de tiro. Para
+probar esto, los ocho voluntarios se les pidió usar un rifle en un rango de tiro, tanto con
+un telescopio en la mira como sin telescopio en la mira de los rifles, usando un patrón
+alternado aleatorio entre ambos. Los resultado fueron:
+
+¿Las miras telescópicas resultan en puntajes más altos?
+
+a) Usar una prueba basada sólo en rangos. Encontrar el p-valor en tres formas diferentes:
+(1) encontrar el p-valor exacto, (2) Usar la aproximación normal sin corrección por
+continuidad y (3) Usar la aproximación normal con la corrección de continuidad.
+
+
+```{r}
+w<-c(96, 93, 89, 88, 85, 83, 80, 77)
+z<-c(92, 92, 89, 96, 82, 79, 80, 78)
+dif<-w-z
+```
+
+(1) p-value exacto
+```{r}
+wilcox.test(w,z,alternative = "two.sided",
+            paired = FALSE, exact = TRUE, correct = FALSE,
+            conf.int = TRUE, conf.level = 0.85,
+             digits.rank = Inf)
+```
+
+(2)Usar la aproximación normal sin corrección por continuidad ¿cómo se le deja la normal sin que se corrija? Me sale igual que con p-value exacto
+
+```{r}
+wilcox.test(w,z,alternative = "two.sided",
+            paired = FALSE, exact = FALSE, correct = FALSE,
+            conf.int = TRUE, conf.level = 0.85,
+             digits.rank = Inf)
+```
+
+(3)Usar la aproximación normal con la corrección de continuidad
+```{r}
+wilcox.test(w,z,alternative = "two.sided",
+            paired = FALSE, exact = FALSE, correct = TRUE,
+            conf.int = TRUE, conf.level = 0.85,
+             digits.rank = Inf)
+```
+
+b)Usar una prueba basada en normalidad. FALTA ESTA
+
+```{r}
+shapiro.test(dif)
+```
+Tiene un p-value mayor a 0.05, entonces no rechazamos $H_0$.
+
+c)Usar una prueba de aleatorización tipo Fisher
+
+```{r}
+#fisher.test(w, z, alternative = "two.sided") la veremos en clase
+```
+
+
+d)Encontrar un intervalo de confianza para la mejora en el puntaje obtenida usando una
+mira telescópica
+```{r}
+library(gmodels)
+mejora<-dif
+ci(mejora, confidence=0.95)
+```
+Tenemos que el intervalo es [-2.876358, 3.626358]
+
+
+
+
+
 
 # Ejercicio 10
 
