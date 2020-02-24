@@ -7,6 +7,9 @@ output: pdf_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+
+library(knitr)
+library(tidyverse)
 ```
 
 
@@ -38,14 +41,127 @@ cat("\nEjercicios Sof: ")
 
 
 
+# Ejercicio 5
+
+- Cantidad __mediana__ de sueño es de 7,5 hrs, con d.est de 1.5 hrs.
+
+- El 5% de la población duerme 6 o menos.
+
+- El otro 5% duerme  9 o más hrs.
+
+- n = 8. 
+
+```{r,'ej5 data'}
+# data
+X <- c(7.2,8.3,5.6,7.4,7.8,5.2,9.1,5.8)
+n <- length(data)
+# kable(as.array(data),col.names = c("Horas de sueno"))
+# quantiles
+q_vec <- c(0.05,0.5,0.95)
+
+# empirical quantiles
+empq_vec <- c(6,7.5,9)
+
+#alpha
+alpha <- 0.05
+
+```
+
+
+Determinar si los mexicanos duermen menos hoy que lo que hicieron en el pasado. Probarse las hipótesis para los cuantiles 0.05, 0.5 y 0.95.
+
+### Solución:
+
+Como se quiere determinar si los mexicanos duermen __menos__ que hoy, se hará una prueba de hipótesis para los cuantíles concernientes con la prueba de hipótesis 
+$$\mathcal{H}_{0}: \kappa_{p} \le k_{p}^{0}. $$
+
+#### Forma con el valor de K
+
+```{r,'ej5 testHip K'}
+
+cat("Pruebas de hipótesis para Kp")
+for(i in 1:3)
+{
+  cat(paste("\n\n Para p = ",toString(i), sep = " "))
+  # find k
+  K <- sum(ifelse(X - empq_vec[i] > 0, 1, 0))
+  cat(paste("\nEl valor de K es",toString(K), sep = " "))
+  
+  # find s
+  fails <- sum( (pbinom(q = 0:n,size = n,prob = 1 - q_vec[i]) < alpha)) #pbinom y de cumulative dist, number of fails
+  s <- n - fails
+  cat(paste("\nEl valor de s es",toString(s), sep = " "))
+  
+  #test Hip
+  test <- ifelse(K <= (n - s),'cierta','falsa')
+  cat(paste("\n La prueba de hipótesis es",test, sep = " "))
+}
+
+
+
+```
+
+#### Forma con la estadistica de orden X_{s}
+
+```{r, 'ej5 SOrder'}
+cat("Pruebas de hipótesis para Kp")
+for(i in 1:3)
+{
+  cat(paste("\n\n Para p = ",toString(i), sep = " "))
+  # find s
+  fails <- sum( (pbinom(q = 0:n,size = n,prob = 1 - q_vec[i]) < alpha)) #pbinom y de cumulative dist, number of fails
+  s <- n - fails
+  cat(paste("\nEl valor de s es",toString(s), sep = " "))
+  
+  #find X(s)
+  Xs <- X[s+1]  #s can start from cero
+  cat(paste("\nEl valor de X(s) es",toString(Xs), sep = " "))
+  cat(paste("\nEl valor de kp es",toString(empq_vec[i]), sep = " "))
+  
+    
+  #test Hip
+  test <- ifelse(Xs <= empq_vec[i],'cierta','falsa')
+  cat(paste("\n La prueba de hipótesis es",test, sep = " "))
+}
 
 
 
 
+```
 
+# Ejercicio 10
 
+- 12 escenarios para contar muertos por epidemia por cada medicamento.
 
+```{r, 'ej10 data'}
+# data
+medA <- c(41,8,65,28,11,15,73,54,7,50,59,24)
+medB <- c(38,14,41,31,8,18,48,32,7,37,42,48)
+escen <- 1:12
+data <- data.frame(x = cbind(escen,medA,medB))
 
+kable(data, col.names = c("Escenario","Meidicina A","Medicina B"))
+
+```
+
+## Gráfica de dispersión
+
+```{r,'ej10 Graphdisp'}
+
+g_ej10_points <- ggplot(data = data, mapping = aes(x = medA, y = medB)) + 
+                  geom_point(col = "blue", alpha = 0.5, size = 5) + xlab("Medicina A") + ylab("Medicina B") + ggtitle("Gráfica de dispersión")
+                  
+g_ej10_points
+```
+
+## Correlación Spearman y de Kendall
+
+```{r,'Ej10 Spearman y Kendall'}
+rho_s <-  cor(x = data$x.medA,y = data$x.medB,method = "spearman")
+tau_k <- cor(x = data$x.medA,y = data$x.medB,method = "kendall")
+```
+
+Vemos que la correlación de Spearman $\rho$, es `r rho_s`. Mientras que la correlación de Kendall $\tau$, es `r tau_k`.
 
 
 
