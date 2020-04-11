@@ -1,0 +1,50 @@
+---
+title: "hw3"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Ejercicio 10
+Cada uno de siete pacientes se sometieron a tres tratamientos de diálisis de riñon. Los siguientes valores de cambio de peso se obtuvieron entre las sesiones de diálisis.
+Probar la hipótesis nula de que no hay diferencia en el cambio medio de peso entre tratamientos. Usar una prueba de permutación diseñada adecuadamente.
+
+```{r}
+tratamiento1 <- c(2.90, 2.56, 2.88, 2.73, 2.50, 3.18, 2.83)
+tratamiento2 <- c(2.97, 2.45, 2.76, 2.20, 2.16, 2.89, 2.87)
+tratamiento3 <- c(2.67, 2.62, 1.84, 2.33, 1.27, 2.39, 2.39)
+
+boxplot(tratamiento1, tratamiento1, tratamiento3)
+
+```
+
+A primera vista, podemos ver que el tratamiento tres parece generar distintos pesos. Pero realizaremos la prueba de permutación, utilizando la prueba Kruskal-Wallis para obtener un estadístico que nos permita comparar la media de tres poblaciones.
+
+```{r}
+n <- length(tratamiento1)
+pesos <- c(tratamiento1,tratamiento2,tratamiento3) #muestra combinada
+grupos <- c(rep(1,n), rep(2,n), rep(3,n)) #grupos de los pesos
+K0 <- kruskal.test(pesos, grupos)$statistic #estadístico original
+
+B <- 1000 
+ind <- 1:(n*3) #indices de la muestra combinada 
+reps <- numeric(B) #vector donde se guardan las replicas 
+
+for (i in 1:B)
+  { 
+  # genera índices para la primera muestra 
+  k1 <- sample(ind,size=n, replace=F)
+  # genera los segundos índices
+  k2 <- sample(ind[-k1],size=n, replace=F)
+  x1 <- pesos[k1] 
+  y1 <- pesos[k2]
+  z1 <- pesos[c(-k1,-k2)]
+  reps[i] <- kruskal.test(c(x1,y1,z1), grupos)$statistic 
+  } 
+p <- mean(c(K0, reps) >= K0) 
+cat("p-value: ", p)
+```
+
+Observamos que p-values es menor que alpha = 0.05, por lo tanto rechazamos la H0: las medias de los pesos despues de los tres tratamientos son iguales. Entonces, concluimos que que si hay diferencia entre los tratamientos y por el primer "boxplot" podríamos señalar que el tratamiento 3 el que genera las diferencias.
