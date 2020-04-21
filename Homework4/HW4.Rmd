@@ -22,3 +22,24 @@ cat("\nEjercicios Sof: ")
 (ex_sof <- number_ex)
 ```
 
+```{r setup, include=FALSE, results=FALSE}
+#Instalar las librerias necesarias y cargarlas
+instalar <- function(paquete) {
+    if (!require(paquete,character.only = TRUE,
+                 quietly = TRUE, 
+                 warn.conflicts = FALSE)){
+          install.packages(as.character(paquete),
+                           dependecies = TRUE,
+                           repos = "http://cran.us.r-project.org")
+          library(paquete,
+                  character.only = TRUE, 
+                  quietly = TRUE,
+                  warn.conflicts = FALSE)
+    }
+}
+libs <- c( 'sm') 
+lapply(libs, instalar)
+```
+
+
+
