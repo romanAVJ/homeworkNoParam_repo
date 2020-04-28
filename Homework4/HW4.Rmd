@@ -1,6 +1,8 @@
 ---
-title: "R Notebook"
-output: html_notebook
+title: "Homework4"
+output:
+  pdf_document: default
+  html_notebook: default
 ---
 
 ```{r, include = FALSE}
@@ -37,8 +39,57 @@ instalar <- function(paquete) {
                   warn.conflicts = FALSE)
     }
 }
-libs <- c( 'sm') 
+libs <- c('sm', 'HistData', 'MASS', 'splines') 
 lapply(libs, instalar)
+```
+
+##Ejercicio 4
+
+```{r}
+data(Michelson)
+head(Michelson)
+```
+
+```{r}
+plot(density(Michelson$velocity,bw = 12),col = "red", lwd =1, main = "KDE de velocidad",ylab="prob",xlab="velocidad")
+rug(Michelson$velocity) 
+```
+
+```{r}
+hist(Michelson$velocity, breaks=15, xlim = c(500,1150), ylim = c(0,0.006), col ="pink", prob = T)
+lines(density(Michelson$velocity, bw = "nrd", n = 100)) # factor normal (1.06)
+bandwidth.nrd(Michelson$velocity) # ancho de banda cuadruplicado.
+lines(density(Michelson$velocity, bw = "nrd0", n = 100), lty=3, col = "red", lwd = 3) #factor con (0.9)
+
+```
+
+##Ejercicio 6
+```{r}
+set.seed(042020)
+u <- runif(100)
+x <- sort(u)
+y <- x^2 + 0.1*rnorm(100)
+```
+
+```{r}
+splinefun(x, y,  method = "fmm", ties = mean)
+```
+
+```{r}
+dat <- data.frame(x, y)
+FIT <- lm( y ~ bs(x, df = 4 ), data =dat) 
+summary(FIT)
+MAT <- bs(dat$x, df = 4) 
+X <- dat[[1]]
+Ypred <- MAT[, 1] * FIT$coefficients[2] +  
+  MAT[, 2] * FIT$coefficients[3] +
+  MAT[, 3] * FIT$coefficients[4] +
+  MAT[, 4] * FIT$coefficients[5] + FIT$coefficients[1]
+
+plot(dat$x, dat$y)
+Pts <- seq(1,10, length.out = 100)
+lines(Pts, predict(FIT, newdata = list(x = Pts)))
+points(X, Ypred, col = "red")
 ```
 
 
