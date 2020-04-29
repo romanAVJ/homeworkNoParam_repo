@@ -1,0 +1,34 @@
+---
+title: "hw4"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+Ejercicio 3
+Generar 20 observaciones de una distribución mezcla donde la mitad de las observaciones son normales estándar y la otra mitad son datos normales N (1,0.64). Usar la función density de R para crear un estimador de la densidad.
+```{r}
+# Primero generamos las observaciones de la distribución mezcla
+X <- rnorm(10)
+Y <- rnorm(10,1,0.64)
+x <- c(X,Y)
+# Observamos el resultado usando un histograma
+hist(x, probability = T, col = "grey")
+```
+El histograma nos permite ver de manera rápida la presencia de dos distribuciones.
+
+```{r}
+# Ahora estimaremos la KDE usando la función density()
+density(x, bw = "nrd")
+# Observamos que el ancho de banda óptimo está cercano a 0.5, por lo tanto usaremos esta cantidad para hacer comparaciones entre distintos kernel´s.
+hist(x, xlim = c(-2, 3),probability = T, col = "grey", main = "KDE de la distribución mezcal",ylab="prob",xlab="x´s")
+lines(density(x,bw = 0.5, kernel = "gaussian"), lwd =3, ) 
+lines(density(x,bw = 0.5, kernel = "rectangular"),col = "blue", lwd =3)
+lines(density(x,bw = 0.5, kernel = "epanechnikov"),col = "red", lwd =3)
+legend("topright", legend = c("normal","rectangular","epanechnikov"), col = c("black","blue","red"), lwd = c(3,3)) 
+#rug(geyser$duration) # agrega los ticks en donde hay observaciones
+```
+Primero, observamos que la estimación del histograma no es buena. Entre los distintos Kernel´s, los tres son similares. Cómo sabemos que las observacione vienen de una mezcla de densidades normales, el Kernel Gaussiano podría ser el más conveniente.
