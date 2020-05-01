@@ -1,13 +1,53 @@
 ---
-title: "R Notebook"
-output: html_notebook
+title: "Homework4"
+output:
+  pdf_document: default
+  html_notebook: default
 ---
+
+```{r, include = FALSE}
+set.seed(20200420) #created at date
+# assigning number of excercises 
+(people_3quest <- sample(x = c("Luis","Roman","Sant","Sof"),replace = F, size = 2)) #people with 3 questions, by alphabetic order
+# assinging excersises
+number_ex <- 1:10 #excercises
+cat("\nEjercicios Luis: ")
+(ex_luis <- sample(x = number_ex, replace = F, size = 3))
+number_ex <- number_ex[! number_ex %in% ex_luis] #removing questions 
+cat("\nEjercicios Roman: ")
+(ex_roman <- sample(x = number_ex, replace = F, size = 3))
+number_ex <- number_ex[! number_ex %in% ex_roman] #removing questions 
+cat("\nEjercicios Sant: ")
+(ex_sant <- sample(x = number_ex, replace = F, size = 3))
+number_ex <- number_ex[! number_ex %in% ex_sant] #removing questions 
+cat("\nEjercicios Sof: ")
+(ex_sof <- number_ex)
+```
+
+```{r setup, include=FALSE, results=FALSE}
+#Instalar las librerias necesarias y cargarlas
+instalar <- function(paquete) {
+    if (!require(paquete,character.only = TRUE,
+                 quietly = TRUE, 
+                 warn.conflicts = FALSE)){
+          install.packages(as.character(paquete),
+                           dependecies = TRUE,
+                           repos = "http://cran.us.r-project.org")
+          library(paquete,
+                  character.only = TRUE, 
+                  quietly = TRUE,
+                  warn.conflicts = FALSE)
+    }
+}
+libs <- c('sm', 'HistData', 'MASS', 'splines') 
+lapply(libs, instalar)
+```
 
 
 
 # Ejercicio 2. Densidad gaussiana.
 
-Se pide $\mathbb{P}[X \leq 15]$.
+Se pide $$\mathbb{P}[X \leq 15]$$.
 Se hará de la siguiente manera, con el estimador de Kernel Rosenblatt, con $K_0$ un kernel gaussino.
 
 $$\mathbb{P}[X \leq 15] = \int_{- \infty}^{15}\hat{f}_{n}^{K_0}(x) dx =\frac{1}{\sqrt{9}} \int_{- \infty}^{15}\sum_{i = 1}^{9}\varphi(\frac{x_{i} - x}{\sqrt{1/3}})dx = \frac{1}{9}\sum_{i=1}^{9}\Phi(\frac{15 - x_{i}}{\sqrt{1/3}})$$
@@ -26,7 +66,7 @@ s <- 1/n * s
 
 ```
 
-Por tanto,  $\mathbb{P}[X \leq 15]  \approx $ `r s`
+Por tanto,  $$\mathbb{P}[X \leq 15]  \approx $$ `r s`
 
 ```{r forma2}
 #seed
@@ -83,6 +123,60 @@ integrate(kpdf, - Inf, 15)
 
 __NOTA__ 
 
-A cambios de $h_n$ , las probabilidades cambian.
+1. A cambios de $h_n$ , las probabilidades cambian.
+2. La estimación de la probabilidad numérica coincide con la teórica.
+
+
+
+
+##Ejercicio 4
+
+```{r}
+data(Michelson)
+head(Michelson)
+```
+
+```{r}
+plot(density(Michelson$velocity,bw = 12),col = "red", lwd =1, main = "KDE de velocidad",ylab="prob",xlab="velocidad")
+rug(Michelson$velocity) 
+```
+
+```{r}
+hist(Michelson$velocity, breaks=15, xlim = c(500,1150), ylim = c(0,0.006), col ="pink", prob = T)
+lines(density(Michelson$velocity, bw = "nrd", n = 100)) # factor normal (1.06)
+bandwidth.nrd(Michelson$velocity) # ancho de banda cuadruplicado.
+lines(density(Michelson$velocity, bw = "nrd0", n = 100), lty=3, col = "red", lwd = 3) #factor con (0.9)
+
+```
+
+##Ejercicio 6
+```{r}
+set.seed(042020)
+u <- runif(100)
+x <- sort(u)
+y <- x^2 + 0.1*rnorm(100)
+```
+
+```{r}
+splinefun(x, y,  method = "fmm", ties = mean)
+```
+
+```{r}
+dat <- data.frame(x, y)
+FIT <- lm( y ~ bs(x, df = 4 ), data =dat) 
+summary(FIT)
+MAT <- bs(dat$x, df = 4) 
+X <- dat[[1]]
+Ypred <- MAT[, 1] * FIT$coefficients[2] +  
+  MAT[, 2] * FIT$coefficients[3] +
+  MAT[, 3] * FIT$coefficients[4] +
+  MAT[, 4] * FIT$coefficients[5] + FIT$coefficients[1]
+
+plot(dat$x, dat$y)
+Pts <- seq(1,10, length.out = 100)
+lines(Pts, predict(FIT, newdata = list(x = Pts)))
+points(X, Ypred, col = "red")
+```
+
 
 
