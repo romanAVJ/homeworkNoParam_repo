@@ -1,0 +1,88 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+
+
+# Ejercicio 2. Densidad gaussiana.
+
+Se pide $\mathbb{P}[X \leq 15]$.
+Se hará de la siguiente manera, con el estimador de Kernel Rosenblatt, con $K_0$ un kernel gaussino.
+
+$$\mathbb{P}[X \leq 15] = \int_{- \infty}^{15}\hat{f}_{n}^{K_0}(x) dx =\frac{1}{\sqrt{9}} \int_{- \infty}^{15}\sum_{i = 1}^{9}\varphi(\frac{x_{i} - x}{\sqrt{1/3}})dx = \frac{1}{9}\sum_{i=1}^{9}\Phi(\frac{15 - x_{i}}{\sqrt{1/3}})$$
+
+```{r forma1}
+#data
+X <- c(12,13,12,15,15,16,19,20,25)
+n <- length(X)
+p <- 15
+hn <- sqrt(3/n)
+
+#estimate P(X < 15)
+s <- 0
+for (xi in X){s <- s + pnorm((p-xi)/hn)}
+s <- 1/n * s
+
+```
+
+Por tanto,  $\mathbb{P}[X \leq 15]  \approx $ `r s`
+
+```{r forma2}
+#seed
+set.seed(42)
+
+#density estimator
+#data
+data <- c(12,13,12,15,15,16,19,20,25)
+n <- length(X)
+p <- 15
+hn <- sqrt(3/n)
+
+# Kernel
+Kernel <- function(x) {mean(dnorm((x - data)/ hn)/hn )}    #kernel Density
+kpdf <- function(x) sapply(x, Kernel)   # Elementwise application
+
+
+# estimate kernel
+x <- seq(5, 30, length = 1000)
+
+#plot 
+#total prob 
+plot(data, kpdf(data), col = 2, ylim = c(0,.25), xlim = c(5,30))
+
+#plot all
+lines(x, kpdf(x))
+
+#rug
+rug(data)
+
+#individual kernels
+i <- 1
+eps <- rnorm(n = n, sd = 0.2)
+for(xi in data){
+  lines(x, dnorm(x, mean = xi + eps[i], sd = hn)*.1, col = 2)
+  i <- i + 1
+}
+
+#density with R
+lines(density(data, kernel = 'gaussian', bw = 'SJ'), xlim = c(5,30), ylim = c(0,.20), col = 3)
+
+
+
+```
+
+
+La probabilidad estimada de manera numérica está dada por:
+
+```{r}
+# estimate probability
+integrate(kpdf, - Inf, 15)
+
+```
+
+__NOTA__ 
+
+A cambios de $h_n$ , las probabilidades cambian.
+
+
