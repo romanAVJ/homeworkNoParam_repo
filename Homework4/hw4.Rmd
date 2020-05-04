@@ -178,5 +178,37 @@ lines(Pts, predict(FIT, newdata = list(x = Pts)))
 points(X, Ypred, col = "red")
 ```
 
+##Ejercicio 10
 
+Queremos estimar $\sigma^2$
+
+```{r}
+data(radioc)
+summary(radioc)
+head(radioc)
+plot(radioc)
+sm.weight(radioc$Rc.age,radioc$Precision,h=30).
+#gasser.10<-sm.sigma(x, y)
+```
+
+```{r}
+data(radioc)
+par(mfrow=c(1,2))
+plot(radioc$Cal.age, radioc$Re.age)
+abline(0,1,lty=2)
+ind <- (radioc$Cal.age>2000 & radioc$Cal.age<3000)
+cal.age <- radioc$Cal.age[ind]
+re.age <- radioc$Re.age[ind]
+sm.regression(cal.age, re.age, h = 30)
+sm.regression(cal.age, re.age, h = 1000, lty = 2, add=T)
+par(mfrow=c(1,1))
+```
+
+
+```{r}
+gasser.10<-sm.sigma(radioc[,1:2], radioc[,3], rawdata = NA)
+```
+
+¿A qué valor el estimador basado en la suma de los residuales al cuadrado converge cuando
+el parámetro de suavizamiento se hace muy grande? No vimos este tema
 
