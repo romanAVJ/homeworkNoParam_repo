@@ -39,7 +39,7 @@ instalar <- function(paquete) {
                   warn.conflicts = FALSE)
     }
 }
-libs <- c('sm', 'HistData', 'MASS', 'splines') 
+libs <- c('sm', 'HistData', 'MASS', 'splines','tidyverse') 
 lapply(libs, instalar)
 ```
 
@@ -237,4 +237,47 @@ gasser.10<-sm.sigma(radioc[,1:2], radioc[,3], rawdata = NA)
 
 ¿A qué valor el estimador basado en la suma de los residuales al cuadrado converge cuando
 el parámetro de suavizamiento se hace muy grande? No vimos este tema
+
+
+
+# Ejercicio 7
+
+Datos simulados de accidentes de motocicleta.
+
+```{r}
+# load data set
+df_motor <- read.table(file = 'motor.dat', stringsAsFactors = FALSE, header = TRUE )
+df_motor[,c(3,4)] <- df_motor[,c(3,4)] %>% as.factor()
+
+# loess fitness
+df_motor %>% 
+  ggplot(aes(x = times, y = accel)) +
+  geom_point() +
+  geom_smooth(method = 'loess', color = 'navy') +
+  geom_smooth(method = 'loess', color = 'red', span = 0.1) + 
+  geom_smooth(method = 'loess', color = 'green', span = 0.5)  +
+  ggtitle(label = 'loess')
+  
+# spline
+x <- df_motor$times
+y <- df_motor$accel
+
+sm.regression(x, y, h = 1) + title(main = 'Spline')
+
+
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
 
