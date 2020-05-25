@@ -39,7 +39,7 @@ instalar <- function(paquete) {
                   warn.conflicts = FALSE)
     }
 }
-libs <- c('sm', 'HistData', 'MASS', 'splines') 
+libs <- c('sm', 'HistData', 'MASS', 'splines','tidyverse') 
 lapply(libs, instalar)
 ```
 
@@ -154,7 +154,6 @@ legend("topright", legend = c("normal","rectangular","epanechnikov"), col = c("b
 Primero, observamos que la estimación del histograma no es buena. Entre los distintos Kernel´s, los tres son similares. Cómo sabemos que las observacione vienen de una mezcla de densidades normales, el Kernel Gaussiano podría ser el más conveniente.
 
 
-
 ##Ejercicio 4
 
 ```{r}
@@ -204,37 +203,80 @@ lines(Pts, predict(FIT, newdata = list(x = Pts)))
 points(X, Ypred, col = "red")
 ```
 
+
+# Ejercicio 7
+
+Datos simulados de accidentes de motocicleta.
+
+```{r}
+# load data set
+df_motor <- read.table(file = 'motor.dat', stringsAsFactors = FALSE, header = TRUE )
+df_motor[,c(3,4)] <- df_motor[,c(3,4)] %>% as.factor()
+
+# loess fitness
+df_motor %>% 
+  ggplot(aes(x = times, y = accel)) +
+  geom_point() +
+  geom_smooth(method = 'loess', color = 'navy') +
+  geom_smooth(method = 'loess', color = 'red', span = 0.1) + 
+  geom_smooth(method = 'loess', color = 'green', span = 0.5)  +
+  ggtitle(label = 'loess')
+  
+# spline
+x <- df_motor$times
+y <- df_motor$accel
+
+sm.regression(x, y, h = 1) + title(main = 'Spline')
+
+```
+
 ##Ejercicio 10
 
-Queremos estimar $\sigma^2$
+Queremos estimar $\sigma^2$ (error variance)
 
+Cargamos los datos
 ```{r}
 data(radioc)
 summary(radioc)
 head(radioc)
-plot(radioc)
-sm.weight(radioc$Rc.age,radioc$Precision,h=30).
-#gasser.10<-sm.sigma(x, y)
 ```
+¿Qué h elijo?
 
 ```{r}
-data(radioc)
-par(mfrow=c(1,2))
-plot(radioc$Cal.age, radioc$Re.age)
-abline(0,1,lty=2)
-ind <- (radioc$Cal.age>2000 & radioc$Cal.age<3000)
-cal.age <- radioc$Cal.age[ind]
-re.age <- radioc$Re.age[ind]
-sm.regression(cal.age, re.age, h = 30)
-sm.regression(cal.age, re.age, h = 1000, lty = 2, add=T)
-par(mfrow=c(1,1))
+h.10<-h.select(radioc$Rc.age,radioc$Cal.age)
 ```
 
+Construimos la matriz de pesos $S$
+```{r}
+s.10<-sm.weight(radioc$Rc.age,radioc$Cal.age,h=h.10)
+```
+
+Construimos el estimador del error de la varianza basado en la suma de residuales al cuadrado
 
 ```{r}
-gasser.10<-sm.sigma(radioc[,1:2], radioc[,3], rawdata = NA)
+reg.10<-sm.regression(radioc$Rc.age,radioc$Cal.age,)
 ```
 
-¿A qué valor el estimador basado en la suma de los residuales al cuadrado converge cuando
-el parámetro de suavizamiento se hace muy grande? No vimos este tema
+
+Construimos el estimador de diferenciade base 
+```{r}
+(d.10<-sm.sigma(radioc$Rc.age,radioc$Cal.age))
+```
+
+Ahora sí graficamos
+```{r}
+plot(s.10)
+abline(v=d.10, col="blue")
+```
+
+
+
+
+
+
+
+
+
+
+
 

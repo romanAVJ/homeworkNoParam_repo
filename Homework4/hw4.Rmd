@@ -154,7 +154,6 @@ legend("topright", legend = c("normal","rectangular","epanechnikov"), col = c("b
 Primero, observamos que la estimación del histograma no es buena. Entre los distintos Kernel´s, los tres son similares. Cómo sabemos que las observacione vienen de una mezcla de densidades normales, el Kernel Gaussiano podría ser el más conveniente.
 
 
-
 ##Ejercicio 4
 
 ```{r}
@@ -204,41 +203,6 @@ lines(Pts, predict(FIT, newdata = list(x = Pts)))
 points(X, Ypred, col = "red")
 ```
 
-##Ejercicio 10
-
-Queremos estimar $\sigma^2$
-
-```{r}
-data(radioc)
-summary(radioc)
-head(radioc)
-plot(radioc)
-sm.weight(radioc$Rc.age,radioc$Precision,h=30).
-#gasser.10<-sm.sigma(x, y)
-```
-
-```{r}
-data(radioc)
-par(mfrow=c(1,2))
-plot(radioc$Cal.age, radioc$Re.age)
-abline(0,1,lty=2)
-ind <- (radioc$Cal.age>2000 & radioc$Cal.age<3000)
-cal.age <- radioc$Cal.age[ind]
-re.age <- radioc$Re.age[ind]
-sm.regression(cal.age, re.age, h = 30)
-sm.regression(cal.age, re.age, h = 1000, lty = 2, add=T)
-par(mfrow=c(1,1))
-```
-
-
-```{r}
-gasser.10<-sm.sigma(radioc[,1:2], radioc[,3], rawdata = NA)
-```
-
-¿A qué valor el estimador basado en la suma de los residuales al cuadrado converge cuando
-el parámetro de suavizamiento se hace muy grande? No vimos este tema
-
-
 
 # Ejercicio 7
 
@@ -264,11 +228,46 @@ y <- df_motor$accel
 
 sm.regression(x, y, h = 1) + title(main = 'Spline')
 
+```
 
+##Ejercicio 10
 
+Queremos estimar $\sigma^2$ (error variance)
+
+Cargamos los datos
+```{r}
+data(radioc)
+summary(radioc)
+head(radioc)
+```
+¿Qué h elijo?
+
+```{r}
+h.10<-h.select(radioc$Rc.age,radioc$Cal.age)
+```
+
+Construimos la matriz de pesos $S$
+```{r}
+s.10<-sm.weight(radioc$Rc.age,radioc$Cal.age,h=h.10)
+```
+
+Construimos el estimador del error de la varianza basado en la suma de residuales al cuadrado
+
+```{r}
+reg.10<-sm.regression(radioc$Rc.age,radioc$Cal.age,)
 ```
 
 
+Construimos el estimador de diferenciade base 
+```{r}
+(d.10<-sm.sigma(radioc$Rc.age,radioc$Cal.age))
+```
+
+Ahora sí graficamos
+```{r}
+plot(s.10)
+abline(v=d.10, col="blue")
+```
 
 
 
